@@ -1,0 +1,7 @@
+[2021-01-21 11:36:29,789] SEVERE {b7a.log.crash} - java.lang.StackOverflowError 
+error: java.lang.StackOverflowError 
+	at ballerina.http:externExecuteClientAction(http_client.bal:235)
+	   ballerina.http.HttpClient:post(http_client.bal:48)
+	   ballerina.http.Client:post(client_endpoint.bal:72)
+	   service:invokeEndpoint(service.bal:40)
+	   service:$lambda$0(service.bal:27) 
