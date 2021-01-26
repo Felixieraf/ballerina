@@ -6,8 +6,8 @@ import ballerina/lang.'float;
 
 var env_dev="http://127.0.0.1:8290";
 var env_prod="http://13.232.204.228";
-http:Client societyEP = new(env_dev+"/services/societe");
-http:Client personEP= new(env_dev+"/services/personne");
+http:Client societyEP = new(env_prod+"/services/societe");
+http:Client personEP= new(env_prod+"/services/personne");
 
 var idPersonne=0;
 var idSiegeSocial=0;

@@ -133,7 +133,7 @@ json playload=  outboundPayload;
 
      // Society information
      var denominationSocial=processString(playload.step2.denominationSocial);
-     var activitePrincipal=process(playload.step2.activitePrincipal);
+     var activitePrincipal=processString(playload.step2.activitePrincipal);
      var formeJuridique=processString(playload.step2.formeJuridique);
      var dateStatut=processString(playload.step2.dateStatut);
      var capital=processFloat(playload.step2.capital);
