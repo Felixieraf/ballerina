@@ -87,7 +87,7 @@ function cloneAndAggregateUpload( json payload, http:Client clientEP1) returns j
         worker w8 returns json {
            // SIEGE SOCIAL;
            var owner="Siege social Contrat";
-           var ressource="listdocumentToUploadByTheHeadOfficeWithContratId?idTypeContrat"+idTypeContrat.toString();
+           var ressource="listdocumentToUploadByTheHeadOfficeWithContratId?idTypeContrat="+idTypeContrat.toString();
          
              return invokeEndpoint(clientEP1,ressource,owner);
             
