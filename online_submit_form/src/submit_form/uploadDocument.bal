@@ -1,6 +1,7 @@
 import ballerina/http;
 import ballerina/io;
 import ballerina/lang.'int as langint;
+import ballerina/docker;
 
 http:Client legalStatusDocumentList = new("http://127.0.01:8290/services/document");
     @docker:Config {
