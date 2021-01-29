@@ -9,6 +9,7 @@ var env_dev="http://127.0.0.1:8290";
 var env_prod="http://13.232.204.228";
 http:Client societyEP = new(env_dev+"/services/societe");
 http:Client personEP= new(env_dev+"/services/personne");
+http:Client dossierEP =new(env_dev+"/services/dossierSoumission");
 
 var idPersonne=0;
 var idSiegeSocial=0;
@@ -113,9 +114,9 @@ function invokeAllEndpoint(http:Client clientEPPerson,http:Client clientEPSociet
 
 
 
-                    return {"message":"error Add Person"};
+                    return {message:inboundPayloadAdressId};
                 } 
-                return {"message":"error Add adressPerson"};
+                return {message:"error add Person"};
     }
     
 
@@ -135,6 +136,7 @@ json playload=  outboundPayload;
      var denominationSocial=processString(playload.step2.denominationSocial);
      var activitePrincipal=processString(playload.step2.activitePrincipal);
      var formeJuridique=processString(playload.step2.formeJuridique);
+     var idFormeJuridique=process(playload.step2.idFormeJuridique);
      var dateStatut=processString(playload.step2.dateStatut);
      var capital=processFloat(playload.step2.capital);
      var activiteImportExport=process(playload.step2.activiteImportExport);
@@ -221,11 +223,16 @@ json playload=  outboundPayload;
                                             var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
                                             if (inboundPayloadSociety is json) {
                                                 var idSociety=process(inboundPayloadSociety.idSocietes.idSociete);
-                                             return inboundPayloadSociety;
+                                                var document_id=idFormeJuridique.toString()+idSociety.toString()+idSiegeSocial.toString();
+                                                int|error val = langint:fromString(document_id.toString());
+                                                io:println("id_document:",val);
+                                                json idDossierSoc={"id_document:":""+val.toString()};
+                                             return {inboundPayloadSociety,"idDossier":idDossierSoc};
                                             } 
                                         } 
                                          return inboundPayloadSiegeSocial;
                                 } 
+                                 //return inboundPayloadSiegeSocial;
                             } 
                            
 
