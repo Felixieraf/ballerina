@@ -227,7 +227,26 @@ json playload=  outboundPayload;
                                                 int|error val = langint:fromString(document_id.toString());
                                                 io:println("id_document:",val);
                                                 json idDossierSoc={"id_document:":""+val.toString()};
-                                             return {inboundPayloadSociety,"idDossier":idDossierSoc};
+                                                json inboundPlayloadDossier={};
+                                                json payloadNumDossier={
+                                                                            "_postaddFolderNumber":{
+                                                                            
+                                                                                "numeroDossier":process(val)
+                                                                            }
+                                                                        };
+
+                                                var inboundResponseDossier = dossierEP->post("/addFolderNumber", payloadNumDossier);
+                                                    if (inboundResponseDossier is http:Response) {
+                                                        var inboundPayloadDossier = inboundResponseDossier.getJsonPayload();
+                                                        if (inboundPayloadDossier is json) {
+                                                            
+                                                            //json idDossierSoc={"id_document:":""+val.toString()};
+                                                            inboundPlayloadDossier=inboundPayloadDossier;
+                                                        return inboundPayloadDossier;
+                                                        } 
+                                                    } 
+
+                                             return {inboundPayloadSociety};
                                             } 
                                         } 
                                          return inboundPayloadSiegeSocial;
