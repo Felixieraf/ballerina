@@ -219,10 +219,11 @@ json playload=  outboundPayload;
                                                     } ;
                                                     // CALL API ADD SOCIETY
                                    var inboundResponseSociety = clientEPSociety->post("/addSocietyForm", playloadSociety);
+                                   var idSociety=0;
                                         if (inboundResponseSociety is http:Response) {
                                             var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
                                             if (inboundPayloadSociety is json) {
-                                                var idSociety=process(inboundPayloadSociety.idSocietes.idSociete);
+                                                 idSociety=process(inboundPayloadSociety.idSocietes.idSociete);
                                                 var document_id=idFormeJuridique.toString()+idSociety.toString()+idSiegeSocial.toString();
                                                 int|error val = langint:fromString(document_id.toString());
                                                 io:println("id_document:",val);
@@ -242,6 +243,19 @@ json playload=  outboundPayload;
                                                             
                                                             //json idDossierSoc={"id_document:":""+val.toString()};
                                                             inboundPlayloadDossier=inboundPayloadDossier;
+                                                            var idDossier=process(inboundPayloadDossier.idDossiers.idDossier);
+                                                            json payloadPutFolderNumber={"_putsetsocetyfolder":
+                                                                                            {
+                                                                                                "idSociete":idSociety,
+                                                                                                "idDossier":idDossier
+
+                                                                                            }
+                                                                                        };
+                                                                                         io:println("test....");
+                                                             var inboundResponceUpdateSociety=clientEPSociety->put("/setSocetyFolder",payloadPutFolderNumber);
+                                                             if(inboundResponceUpdateSociety is http:Response){
+                                                                 io:println("Folder updated");
+                                                             }
                                                         return inboundPayloadDossier;
                                                         } 
                                                     } 
