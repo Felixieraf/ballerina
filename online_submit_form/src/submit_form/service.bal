@@ -6,7 +6,7 @@ import ballerina/docker;
 
 
 var env_dev="http://127.0.0.1:8290";
-var env_prod="http://13.232.204.228";
+var env_prod="http://13.232.204.228:8290";
 http:Client societyEP = new(env_dev+"/services/societe");
 http:Client personEP= new(env_dev+"/services/personne");
 http:Client dossierEP =new(env_dev+"/services/dossierSoumission");
@@ -17,7 +17,12 @@ var idSiegeSocial=0;
 @docker:Config {
    name: "submit_form"
  }
-
+@http:ServiceConfig {
+    cors: {
+        allowOrigins: [env_dev, env_prod,"http://13.232.204.228:9096"],
+        allowCredentials: false
+    }
+}
 service submitForm on new http:Listener(9096) {
 
 
