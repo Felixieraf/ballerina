@@ -53,16 +53,6 @@ org_name = "ballerina"
 name = "io"
 version = "0.5.1"
 
-[[imports."acer/getSoummission:0.1.0"]]
-org_name = "ballerina"
-name = "http"
-version = "1.0.1"
-
-[[imports."acer/getSoummission:0.1.0"]]
-org_name = "ballerina"
-name = "io"
-version = "0.5.1"
-
 [[imports."ballerina/http:1.0.1"]]
 org_name = "ballerina"
 name = "auth"
