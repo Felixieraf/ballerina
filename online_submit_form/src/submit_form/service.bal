@@ -4,7 +4,6 @@ import ballerina/lang.'int as langint;
 import ballerina/lang.'float;
 import ballerina/docker;
 
-
 var env_dev="http://127.0.0.1:8290";
 var env_prod="http://13.232.204.228:8290";
 http:Client societyEP = new(env_dev+"/services/societe");

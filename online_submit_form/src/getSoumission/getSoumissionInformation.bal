@@ -5,9 +5,9 @@ import ballerina/lang.'int as langint;
 
 var env_dev="http://127.0.0.1:8290";
 var env_prod="http://13.232.204.228:8290";
-http:Client societyEP = new(env_dev+"/services/societe");
-http:Client personEP= new(env_dev+"/services/personne");
-http:Client dossierEP =new(env_dev+"/services/dossierSoumission");
+http:Client societyEP1 = new(env_dev+"/services/societe");
+http:Client personEP1= new(env_dev+"/services/personne");
+http:Client dossierEP1 =new(env_dev+"/services/dossierSoumission");
 
 @docker:Config {
    name: "get_submitted_form"
@@ -18,8 +18,8 @@ service getSubmittedForm on new http:Listener(9098) {
 
     @http:ResourceConfig {
          methods: ["GET"],
-         path:"information/{link}",
-         headers:"Content-type: application/json; charset=utf-8"
+         path:"information/{link}"
+     
     }
     resource function information(http:Caller caller, http:Request req,string link) {
       
@@ -33,7 +33,7 @@ service getSubmittedForm on new http:Listener(9098) {
         var idSiegeSocial=0;
         json society={};
         request.addHeader("Accept", "application/json");
-        var inboundResponseFolder = dossierEP->get("/getFolderIdByLink?type_link="+_type.toString()+"&pod="+_pod.toString(), request);
+        var inboundResponseFolder = dossierEP1->get("/getFolderIdByLink?type_link="+_type.toString()+"&pod="+_pod.toString(), request);
                             if (inboundResponseFolder is http:Response) {
                                 var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
                                 if (inboundPayloadFolder is json) {
@@ -43,7 +43,7 @@ service getSubmittedForm on new http:Listener(9098) {
                                  io:print("error");
                             } 
                            
-        var inboundResponseSociety = societyEP->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
+        var inboundResponseSociety = societyEP1->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
                             if (inboundResponseSociety is http:Response) {
                                 var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
                                 if (inboundPayloadSociety is json) {
