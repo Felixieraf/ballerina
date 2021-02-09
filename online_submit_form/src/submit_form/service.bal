@@ -256,6 +256,7 @@ json playload=  outboundPayload;
                                                              if(inboundResponceUpdateSociety is http:Response){
                                                                  io:println("Folder updated");
                                                              }
+                                                             //return folder id and society id
                                                         return {inboundPayloadDossier,"idSociete":idSociety};
                                                         } 
                                                     } 
