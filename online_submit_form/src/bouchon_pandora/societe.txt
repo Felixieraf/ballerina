@@ -1,0 +1,53 @@
+"societes":{
+               "societe_list":[
+                   {
+                       "District":"ANTANANARIVO",
+                       "Denomination":"société B",
+                       "Siege":"Siege société B",
+                       "NomCommerciale":"Nom commericale societe B",
+                       "SiegeSocial":"Siège sociale societe B",
+                       "LieuExploitation":"Lieu d'exploitation societe B",
+                       "Mail":"mailsocietea@mailesia.com",
+                       "Forme Juridique":"SARL",
+                       "Contact":"320000152",
+                       "Activites":"activite societe B",
+                       "EmploiCree":"emploi1 de societe B",
+                       "Secteur":"Primaire",
+                       "CodeActivite":"Exploitation minière",
+                       "RCS":"rcs societe 1",
+                       "DateRCS":"14/02/2021",
+                       "Statistique":"11223335588844",
+                       "DateStatistique":"14/02/2021",
+                       "NIF":"nif societe B",
+                       "DateNIF":"14/02/2021",
+                       "DateReception":"13/02/2021",
+                       "DateDelivrance":"15/02/20201"
+
+                   },
+                    {
+                       "District":"ANTANANARIVO",
+                       "Denomination":"société B",
+                       "Siege":"Siege société B",
+                       "NomCommerciale":"Nom commericale societe B",
+                       "SiegeSocial":"Siège sociale societe B",
+                       "LieuExploitation":"Lieu d'exploitation societe B",
+                       "Mail":"mailsocietea@mailesia.com",
+                       "Forme Juridique":"SARL",
+                       "Contact":"320000152",
+                       "Activites":"activite societe B",
+                       "EmploiCree":"emploi1 de societe B",
+                       "Secteur":"Primaire",
+                       "CodeActivite":"Exploitation minière",
+                       "RCS":"rcs societe 1",
+                       "DateRCS":"14/02/2021",
+                       "Statistique":"11223335588844",
+                       "DateStatistique":"14/02/2021",
+                       "NIF":"nif societe B",
+                       "DateNIF":"14/02/2021",
+                       "DateReception":"13/02/2021",
+                       "DateDelivrance":"15/02/20201"
+
+                   }
+               ]
+           }
+       }
