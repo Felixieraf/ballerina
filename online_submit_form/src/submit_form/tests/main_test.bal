@@ -30,3 +30,4 @@ function testFunction() {
 function afterFunc() {
     io:println("I'm the after function!");
 }
+
