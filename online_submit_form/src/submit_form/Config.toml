@@ -1,0 +1,10 @@
+# Evironment config
+
+env_dev="http://127.0.0.1:8290"
+env_prod="http://13.232.204.228:8290"
+
+#Endpoint config
+
+#society=/services/societe
+#person=/services/personne
+#dossier=/services/dossierSoumission
