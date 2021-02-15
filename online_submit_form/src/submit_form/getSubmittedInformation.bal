@@ -47,7 +47,7 @@ service getSubmittedForm on new http:Listener(9099) {
                             if (inboundResponseSociety is http:Response) {
                                 var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
                                 if (inboundPayloadSociety is json) {
-                                    society=inboundPayloadSociety;
+                                     society=inboundPayloadSociety;
                                     idSociete=iprocess(inboundPayloadSociety.societies.society.idSociete);
                                     idPersonne=iprocess(inboundPayloadSociety.societies.society.idPersonne);
                                     idSiegeSocial=iprocess(inboundPayloadSociety.societies.society.idSiegeSocial);
@@ -106,25 +106,49 @@ service getSubmittedForm on new http:Listener(9099) {
                                 } 
                                  io:print("error when fetching person");
                             } 
+        json dossier={};
+         var inboundResponseDossier = dossierEP1->get("/getInformationDossier?idDossier="+idDossier.toString(), request);
+                            if (inboundResponseDossier is http:Response) {
+                                var inboundPayloadDossier = inboundResponseDossier.getJsonPayload();
+                                if (inboundPayloadDossier is json) {
+                                             dossier=inboundPayloadDossier;
+                                  
+                                    
+                                } 
+                                 io:print("error when fetching Dossier");
+                            } 
+        json document={};
 
-    json[] aggregatedResponse = cloneAndAggregateResult(<@untainted>idDossier,{society,siegeSociety,siegeSocietyAdress},{person,personAdress} );
+   var inboundResponseDocument = dossierEP1->get("/getListDocumentById?idDossier="+idDossier.toString(), request);
+                            if (inboundResponseDocument is http:Response) {
+                                var inboundPayloadDocument = inboundResponseDocument.getJsonPayload();
+                                if (inboundPayloadDocument is json) {
+                                             document=inboundPayloadDocument;
+                                  
+                                    
+                                } 
+                                 io:print("error when fetching Dossier");
+                            } 
+    json[] aggregatedResponse = cloneAndAggregateResult(<@untainted>idDossier,{society,siegeSociety,siegeSocietyAdress},{person,personAdress},{dossier,document} );
     var res3 = caller->respond(<@untainted> aggregatedResponse);              
     }
  
 }
 
-function cloneAndAggregateResult(int payload,json societyOutPayload,json personOutPlayload) returns json[] {
+function cloneAndAggregateResult(int payload,json societyOutPayload,json personOutPayload, json dossierOutPayload) returns json[] {
     fork {
         worker w1 returns json {
             
             return {"SocietyOutPayload":societyOutPayload};
         } worker w2 returns json {
-          return {"PersonOutPayload":personOutPlayload};
+          return {"PersonOutPayload":personOutPayload};
+        }worker w3 returns json {
+          return {"DossierOutPayload":dossierOutPayload};
         }
     }
-    record{json w1; json w2;} results = wait {w1, w2};
+    record{json w1; json w2;json w3;} results = wait {w1, w2,w3};
     
-    json[] aggregatedResponse = [results.w1, results.w2];
+    json[] aggregatedResponse = [results.w1, results.w2,results.w3];
     return aggregatedResponse;
 }
 // Invoke endpoint Person add person and person adress
