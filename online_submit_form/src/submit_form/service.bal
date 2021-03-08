@@ -36,7 +36,7 @@ function cloneAndAggregate(map<json> payload, http:Client clientEP1, http:Client
     
      
     fork {
-        worker w1 returns json {
+        worker{} w1 returns json {
             
             return invokeAllEndpoint(clientEP1, clientEP2,payload);
         } worker w2 returns json {
@@ -122,6 +122,7 @@ function invokeAllEndpoint(http:Client clientEPPerson,http:Client clientEPSociet
 
     return {message: "erreur"};
 }
+
 
 function invokeEndpointSociety(http:Client clientEPSociety,json outboundPayload,int idPersonne) returns @untainted json {
 json playload=  outboundPayload;
