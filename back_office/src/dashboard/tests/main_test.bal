@@ -27,8 +27,3 @@ function afterFunc() {
     io:println("I'm the after function!");
 }
 
-# After Suite Function
-@test:AfterSuite {}
-function afterSuiteFunc() {
-    io:println("I'm the after suite function!");
-}
