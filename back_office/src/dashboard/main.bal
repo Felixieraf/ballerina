@@ -13,7 +13,7 @@ http:Client dossierEP1 =new(env_dev1+"/services/dossierSoumission");
    name: "get_folder_information"
  }
 
-service getSubmittedFormBack on new http:Listener(7001) {
+service getSubmitedFormById on new http:Listener(7001) {
 
 
     @http:ResourceConfig {
