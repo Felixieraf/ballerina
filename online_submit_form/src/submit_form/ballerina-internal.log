@@ -1,4 +1,4 @@
-[2021-02-05 17:18:03,899] SEVERE {b7a.log.crash} - null 
+[2021-03-10 20:57:37,561] SEVERE {b7a.log.crash} - null 
 java.lang.NullPointerException
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.handleDeclaredWithVar(SemanticAnalyzer.java:892)
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.visit(SemanticAnalyzer.java:603)
@@ -16,12 +16,6 @@ java.lang.NullPointerException
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeNode(SemanticAnalyzer.java:2798)
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.visit(SemanticAnalyzer.java:353)
 	at org.wso2.ballerinalang.compiler.tree.BLangFunction.accept(BLangFunction.java:73)
-	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeNode(SemanticAnalyzer.java:2798)
-	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeNode(SemanticAnalyzer.java:2766)
-	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeDef(SemanticAnalyzer.java:2758)
-	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeClassDefinition(SemanticAnalyzer.java:441)
-	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.visit(SemanticAnalyzer.java:430)
-	at org.wso2.ballerinalang.compiler.tree.BLangClassDefinition.accept(BLangClassDefinition.java:105)
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeNode(SemanticAnalyzer.java:2798)
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeNode(SemanticAnalyzer.java:2766)
 	at org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer.analyzeDef(SemanticAnalyzer.java:2758)

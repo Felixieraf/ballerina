@@ -214,7 +214,8 @@ json playload=  outboundPayload;
                                                             "nombreAssociePersMorale":nombreAssociePersMorale, 
                                                             "nombreDirigeant":nombreDirigeant, 
                                                             "idPersonne":idPersonne,
-                                                            "idSiegeSocial":idSiegeSocial
+                                                            "idSiegeSocial":idSiegeSocial,
+                                                            "idFormeJuridique":idFormeJuridique
                                                             
                                                         }
                                                     } ;
