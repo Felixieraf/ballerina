@@ -36,7 +36,7 @@ function cloneAndAggregate(map<json> payload, http:Client clientEP1, http:Client
     
      
     fork {
-        worker{} w1 returns json {
+        worker w1 returns json {
             
             return invokeAllEndpoint(clientEP1, clientEP2,payload);
         } worker w2 returns json {
