@@ -2,11 +2,15 @@
 import ballerina/http;
 import ballerina/docker;
 import ballerina/io;
+import ballerina/config;
 
-var env_dev1="http://127.0.0.1:8290";
+
+var env_wso2=config:getAsString("host.wso2");
+var port_wso2=config:getAsString("port.wso2");
 
 
-http:Client dossierEP1 =new(env_dev1+"/services/dossierSoumission");
+
+http:Client EP =new(env_wso2+":"+port_wso2+"/services/dossierSoumission");
 @docker:Config {
    name: "get_statistique"
  }
@@ -27,7 +31,7 @@ service get_statistique_dossier on new http:Listener(7003) {
         json statistique={};
         http:Request request = new;
         request.addHeader("Accept", "application/json");
-       var inboundResponseStat = dossierEP1->get("/getstatistiqueTotal",request);
+       var inboundResponseStat = EP->get("/getstatistiqueTotal",request);
                             if (inboundResponseStat is http:Response) {
                                 var inboundPayloadStat = inboundResponseStat.getJsonPayload();
                                 io:print(inboundResponseStat.getJsonPayload());
@@ -67,7 +71,7 @@ function invoqueEndpointStatus(int idStatut,string label) returns @untainted jso
 
 http:Request request = new;
 request.addHeader("Accept", "application/json");
-    var inboundResponseStat = dossierEP1->get("/getstatistiqueDossierNouveauTermine?idStatutDossier="+idStatut.toString(),request);
+    var inboundResponseStat = EP->get("/getstatistiqueDossierNouveauTermine?idStatutDossier="+idStatut.toString(),request);
                             if (inboundResponseStat is http:Response) {
                                 var inboundPayloadStat = inboundResponseStat.getJsonPayload();
                                 io:print(inboundResponseStat.getJsonPayload());
