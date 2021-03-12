@@ -1,0 +1,71 @@
+
+import ballerina/http;
+import ballerina/io;
+import ballerina/docker;
+import ballerina/lang.'int as langint;
+
+http:Client dossierEP1 =new(env_dev1+"/services/dossierSoumission");
+
+@docker:Config {
+   name: "get_statistique"
+ }
+
+service get_statistique_dossier on new http:Listener(7003) {
+
+
+    @http:ResourceConfig {
+         methods: ["GET"],
+         path:"information/{id}"
+     
+    }
+    resource function statistique(http:Caller caller, http:Request req,string id) {
+      
+        var nouveau=1;
+        var en_cours=7;
+        var termine=6;
+        json statistique={};
+     
+        http:Request request = new;
+      
+        request.addHeader("Accept", "application/json");            
+            //GET SIEGE SOCIAL BY ID
+         
+    json[] aggregatedResponse = cloneAndAggregateResult(statistique);
+    var res3 = caller->respond(<@untainted> aggregatedResponse);              
+    }
+ 
+}
+
+function cloneAndAggregateResult(json statistique) returns json[] {
+    fork {
+        worker w1 returns json {
+            
+            return {"SocietyOutPayload":societyOutPayload};
+        } worker w2 returns json {
+          return {"PersonOutPayload":personOutPayload};
+        }worker w3 returns json {
+          return {"DossierOutPayload":dossierOutPayload};
+        }
+    }
+    record{json w1; json w2;json w3;} results = wait {w1, w2,w3};
+    
+    json[] aggregatedResponse = [results.w1, results.w2,results.w3];
+    return aggregatedResponse;
+}
+//endpoint statut
+function invoqueEndpointStatus(int idStatut){
+    var inboundResponseSociety = dossierEP1->get("/getstatistiqueDossierNouveauTermine?idStatutDossier="+idStatut.toString(), request);
+                            if (inboundResponseSociety is http:Response) {
+                                var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
+                                if (inboundPayloadSociety is json) {
+                                     society=inboundPayloadSociety;
+                                    idSociete=iprocess(inboundPayloadSociety.societies.society.idSociete);
+                                    idPersonne=iprocess(inboundPayloadSociety.societies.society.idPersonne);
+                                    idSiegeSocial=iprocess(inboundPayloadSociety.societies.society.idSiegeSocial);
+                                  
+                                } 
+                                 io:print("error when fetching society by folder");
+                            } 
+
+
+}

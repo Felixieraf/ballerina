@@ -151,6 +151,7 @@ json playload=  outboundPayload;
      var nombreDirigeant= process(playload.step2.nombreDirigeant);
      // "idPersonne":4           
     
+    
     // CALL API ADD SIEGE SOCIAL ADDRESS
     // Adresse Siege Social setting outbound
     int idFokontany=process(playload.step3.adresse.idFokontany);
