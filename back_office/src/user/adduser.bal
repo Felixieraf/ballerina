@@ -12,7 +12,7 @@ var port_wso2=config:getAsString("port.wso2");
 var port_keycloak=config:getAsString("port.keycloak");
 var idPersonne=0;
 
-http:Client personEP= new(env_wso2+":"+port_wso2+"/services/personne");
+http:Client personEP= new("http://127.0.0.1:8290/services/personne");
 http:Client userKeycloakEP=new(env_keycloak+":"+port_keycloak+"/auth/admin/realms/EDBM");
 
 @docker:Config {
