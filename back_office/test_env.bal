@@ -1,5 +1,6 @@
 import ballerina/http;
 import ballerina/docker;
+import ballerina/config;
  
 @docker:Config {
    push: true,
@@ -10,6 +11,6 @@ import ballerina/docker;
 }
 service hello on new http:Listener(9094) {
     resource function getsayHello (http:Caller caller) {
-        caller->respond("Hello World!",$env{DOCKER_TEST});
+        caller->respond(config:getAsString("test.name"));
     }
 }

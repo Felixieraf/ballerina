@@ -6,3 +6,11 @@ version= "0.1.0"
 observability-included=true
 
 [dependencies]
+
+[host]
+wso2="http://127.0.0.1"
+keycloak="http://13.232.204.228"
+[port]
+wso2="8290"
+keycloak="8081"
+
