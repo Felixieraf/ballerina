@@ -7,7 +7,7 @@ import ballerina/lang.'int as langint;
 
 
 
-var env_wso2=config:getAsString("host.wso2");
+
 
 http:Client EP_DOSSIER =new("http://127.0.0.1:8290/services/dossierSoumission");
 http:Client EP_SOCIETY= new("http://127.0.0.1:8290/services/societe");
