@@ -8,7 +8,7 @@ import ballerina/docker;
    username: "$env{DOCKER_TEST}"
  
 }
-service hello on new http:Listener(9099) { {
+service hello on new http:Listener(9094) {
     resource function getsayHello (http:Caller caller) {
         caller->respond("Hello World!",$env{DOCKER_TEST});
     }
