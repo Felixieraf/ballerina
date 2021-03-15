@@ -10,8 +10,8 @@ import ballerina/lang.'int as langint;
 var env_wso2=config:getAsString("host.wso2");
 
 http:Client EP_DOSSIER =new("http://127.0.0.1:8290/services/dossierSoumission");
-http:Client societyEP1 = new("http://127.0.0.1:8290/services/societe");
-http:Client personEP1= new("http://127.0.0.1:8290/services/personne");
+http:Client EP_SOCIETY= new("http://127.0.0.1:8290/services/societe");
+http:Client EP_PERSON= new("http://127.0.0.1:8290/services/personne");
 @docker:Config {
    name: "get_folder_list"
  }
@@ -51,7 +51,7 @@ service get_list_dossier on new http:Listener(7004) {
                                                                   json societe={};
                                                                   json dossier={"idDossier":j2[i].idDossier.toString(),"numeroDossier":j2[i].numeroDossier.toString(),"dateSoumission":j2[i].dateSoumission.toString(),"statutDossier":j2[i].idStatutDossier.toString()};
 
-                                                                  var inboundResponseSociety = societyEP1->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
+                                                                  var inboundResponseSociety = EP_SOCIETY->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
                                                                                                                 if (inboundResponseSociety is http:Response) {
                                                                                                                   
                                                                                                                     var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
@@ -71,7 +71,7 @@ service get_list_dossier on new http:Listener(7004) {
 
                                                                 json person={};
                                                                 
-                                                                var inboundResponsePerson = personEP1->get("/getPersonInformationByPersonId?idPersonne="+idPersonne.toString(), request);
+                                                                var inboundResponsePerson = EP_PERSON->get("/getPersonInformationByPersonId?idPersonne="+idPersonne.toString(), request);
                                                                                     if (inboundResponsePerson is http:Response) {
                                                                                         var inboundPayloadPerson = inboundResponsePerson.getJsonPayload();
                                                                                         // io:print("status",inboundPayloadPerson);
