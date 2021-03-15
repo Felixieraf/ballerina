@@ -3,17 +3,16 @@ import ballerina/io;
 import ballerina/lang.'int as langint;
 import ballerina/lang.'float;
 import ballerina/docker;
-import ballerina/config;
+import ballerina/system;
 import ballerina/stringutils;
 
-var env_wso2=config:getAsString("host.wso2");
-var env_keycloak=config:getAsString("host.keycloak");
-var port_wso2=config:getAsString("port.wso2");
-var port_keycloak=config:getAsString("port.keycloak");
+var env_wso2=system:getEnv("WSO2_HOST");
+var env_keycloak=system:getEnv("KEYCLOAK_HOST");
+
 var idPersonne=0;
 
-http:Client personEP= new(env_wso2+":"+port_wso2+"/services/personne");
-http:Client userKeycloakEP=new(env_keycloak+":"+port_keycloak+"/auth/admin/realms/EDBM");
+http:Client personEP= new(env_wso2+"/services/personne");
+http:Client userKeycloakEP=new(env_keycloak+"/auth/admin/realms/EDBM");
 
 @docker:Config {
    name: "add_user"
@@ -81,7 +80,7 @@ function invokeAllEndpoint(http:Client clientEPPerson,  json outboundPayload) re
                                 {
                                     io:print("inboundResponseUserKeycloak.statusCode",inboundResponseUserKeycloak.statusCode);
                                        string header=inboundResponseUserKeycloak.getHeader("Location") ;
-                                        string regex=env_keycloak+":"+port_keycloak+"/auth/admin/realms/EDBM/users/";
+                                        string regex=env_keycloak+"/auth/admin/realms/EDBM/users/";
                                         userID=stringutils:replace(header,regex,"");
                                     http:Client userKeycloakGroupEP=new(header);
                                       var inboundResponseUserGroupKeycloak = userKeycloakGroupEP->put("/groups/"+groupID, request);

@@ -2,15 +2,15 @@
 import ballerina/http;
 import ballerina/docker;
 import ballerina/io;
-import ballerina/config;
-import ../../Ballerina.toml;
-
-var env_wso2=config:getAsString("host.wso2");
-var port_wso2=config:getAsString("port.wso2");
+import ballerina/system;
 
 
+var env_wso2=system:getEnv("WSO2_HOST");
 
-http:Client EP =new(env_wso2+":"+port_wso2+"/services/dossierSoumission");
+
+
+
+http:Client EP =new(env_wso2+"/services/dossierSoumission");
 @docker:Config {
    name: "get_statistique"
  }
