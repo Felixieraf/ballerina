@@ -2,7 +2,6 @@
 import ballerina/http;
 import ballerina/docker;
 import ballerina/io;
-import ballerina/config;
 import ballerina/lang.'int as langint;
 
 
