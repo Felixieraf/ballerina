@@ -3,11 +3,11 @@ import ballerina/io;
 import ballerina/lang.'int as langint;
 import ballerina/lang.'float;
 import ballerina/docker;
-import ballerina/system;
+import ballerina/config;
 import ballerina/stringutils;
 
-var env_wso2=system:getEnv("WSO2_HOST");
-var env_keycloak=system:getEnv("KEYCLOAK_HOST");
+var env_wso2=config:getAsString("host.wso2");
+var env_keycloak=config:getAsString("host.keycloak");
 
 var idPersonne=0;
 
