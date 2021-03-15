@@ -1,0 +1,14 @@
+[project]
+org-name= "acer"
+version= "0.1.0"
+
+[build-options]
+observability-included=true
+
+[dependencies]
+
+[host]
+wso2="http://127.0.0.1:8290"
+keycloak="http://13.232.204.228:8081"
+
+
