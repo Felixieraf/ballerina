@@ -41,6 +41,13 @@ service get_list_dossier on new http:Listener(7004) {
                                     //var obj = JSON.parse(inboundPayloadFolder);
                                     json []resp=json_process(inboundPayloadFolder.folders.folder);
                                     json[] j2 = <json[]>resp;
+                                    if (_endValue>j2.length())
+                                    {
+                                              _endValue=j2.length();
+                                    }
+                                      
+            
+
                                     foreach var i in 0 ..< _endValue {
                                                                   //io:print(i.toString()+" "+j2[i].idDossier.toString()+" ");
                                                                   var idDossier=j2[i].idDossier;
