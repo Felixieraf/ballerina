@@ -23,6 +23,7 @@ service get_statistique_dossier on new http:Listener(7003) {
     resource function statistique(http:Caller caller, http:Request req) {
       
         var nouveau=1;
+        var maj=2;
         var en_cours=7;
         var termine=6;
         json total=0;
@@ -39,12 +40,12 @@ service get_statistique_dossier on new http:Listener(7003) {
                                  io:print("error when fetching society by folder");
                             } 
        
-    json[] aggregatedResponse = cloneAndAggregateStatistique(nouveau,en_cours,termine,total);
+    json[] aggregatedResponse = cloneAndAggregateStatistique(nouveau,en_cours,termine,total,maj);
     var res3 = caller->respond(<@untainted> aggregatedResponse);              
     }
  
 }
-function cloneAndAggregateStatistique(int nouveau,int en_cours,int termine, json total) returns json[] {
+function cloneAndAggregateStatistique(int nouveau,int en_cours,int termine, json total,int maj) returns json[] {
     fork {
         worker w1 returns json {
         return invoqueEndpointStatus(nouveau,"nouveau");
@@ -58,10 +59,13 @@ function cloneAndAggregateStatistique(int nouveau,int en_cours,int termine, json
          worker w4 returns json {
           return{"total":total};
         }
+         worker w5 returns json {
+          return invoqueEndpointStatus(maj,"maj");
+        }
     }
-    record{json w1; json w2;json w3;json w4;} results = wait {w1, w2,w3,w4};
+    record{json w1; json w2;json w3;json w4;json w5;} results = wait {w1, w2,w3,w4,w5};
     
-    json[] aggregatedResponse = [results.w1, results.w2,results.w3,results.w4];
+    json[] aggregatedResponse = [results.w1, results.w2,results.w3,results.w4,results.w5];
     return aggregatedResponse;
 }
 
