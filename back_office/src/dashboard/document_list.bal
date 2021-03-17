@@ -31,15 +31,20 @@ service get_list_dossier on new http:Listener(7004) {
         int _triValue=<int>langint:fromString(_tri.toString());
         json [] folder_list=[];
         http:Response inboundResponseFolder=new ;
-        var resp;
-       
         http:Request request = new;
         request.addHeader("Accept", "application/json");
         json folder={};
         var inboundResponseFolderAsc =<http:Response> EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
         var inboundResponseFolderDesc =<http:Response> EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);               
-                                _triValue==1?inboundResponseFolder=inboundResponseFolderAsc:inboundResponseFolder=inboundResponseFolderDesc;
+                             
 
+                                if(_triValue==1){
+                                    inboundResponseFolder=inboundResponseFolderAsc;
+                                }
+                                else
+                                {
+                                    inboundResponseFolder=inboundResponseFolderDesc;
+                                }
                                 io:print(inboundResponseFolder.statusCode);
                                 io:print(_triValue);
                                 var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
