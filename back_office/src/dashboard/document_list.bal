@@ -33,14 +33,12 @@ service get_list_dossier on new http:Listener(7004) {
         http:Request request = new;
         request.addHeader("Accept", "application/json");
         json folder={};
-        
-        
-                             
+             if(_triValue==1){
 
-                                if(_triValue==1){
-                                    var inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
-                                    io:print(inboundResponseFolder.statusCode);
-                                io:print(_triValue);
+                                var inboundResponseFolder = EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
+                                if(inboundResponseFolder is http:Response){
+
+                                
                                 var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
                                 
                                 if (inboundPayloadFolder is json) {
@@ -101,14 +99,17 @@ service get_list_dossier on new http:Listener(7004) {
                                 
                             
                             } 
+                            
+                            }
                                 }
                                 else
                                 {
-                                    var inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);               
-                                
-                                io:print(inboundResponseFolder.statusCode);
-                                io:print(_triValue);
-                                var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
+                              var inboundResponseFolder =EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);               
+                              if(inboundResponseFolder is http:Response)
+                              {
+
+                              
+                              var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
                                 
                                 if (inboundPayloadFolder is json) {
                                    // folder=inboundPayloadFolder;
@@ -167,7 +168,9 @@ service get_list_dossier on new http:Listener(7004) {
                                                                                         
                                 
                             
-                            } }
+                            } 
+                              }
+                            }
        
     json [] aggregatedResponse = folder_list;
     io:print(aggregatedResponse);
