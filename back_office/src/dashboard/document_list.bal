@@ -30,22 +30,16 @@ service get_list_dossier on new http:Listener(7004) {
         int _endValue=<int>langint:fromString(_limit.toString());
         int _triValue=<int>langint:fromString(_tri.toString());
         json [] folder_list=[];
-        http:Response inboundResponseFolder=new ;
         http:Request request = new;
         request.addHeader("Accept", "application/json");
         json folder={};
-        var inboundResponseFolderAsc =<http:Response> EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
-        var inboundResponseFolderDesc =<http:Response> EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);               
+        
+        
                              
 
                                 if(_triValue==1){
-                                    inboundResponseFolder=inboundResponseFolderAsc;
-                                }
-                                else
-                                {
-                                    inboundResponseFolder=inboundResponseFolderDesc;
-                                }
-                                io:print(inboundResponseFolder.statusCode);
+                                    var inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
+                                    io:print(inboundResponseFolder.statusCode);
                                 io:print(_triValue);
                                 var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
                                 
@@ -107,6 +101,73 @@ service get_list_dossier on new http:Listener(7004) {
                                 
                             
                             } 
+                                }
+                                else
+                                {
+                                    var inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);               
+                                
+                                io:print(inboundResponseFolder.statusCode);
+                                io:print(_triValue);
+                                var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
+                                
+                                if (inboundPayloadFolder is json) {
+                                   // folder=inboundPayloadFolder;
+                                    //var obj = JSON.parse(inboundPayloadFolder);
+                                    json []resp=json_process(inboundPayloadFolder.folders.folder);
+                                    json[] j2 = <json[]>resp;
+                                    if (_endValue>j2.length())
+                                    {
+                                              _endValue=j2.length();
+                                    }
+                                      
+            
+
+                                    foreach var i in 0 ..< _endValue {
+                                                                  //io:print(i.toString()+" "+j2[i].idDossier.toString()+" ");
+                                                                  var idDossier=j2[i].idDossier;
+                                                                  var idSociete=0;
+                                                                  var idPersonne=0;
+                                                                  var company_name="";
+                                                                  json societe={};
+                                                                  json dossier={"idDossier":j2[i].idDossier.toString(),"numeroDossier":j2[i].numeroDossier.toString(),"dateSoumission":j2[i].dateSoumission.toString(),"statutDossier":j2[i].idStatutDossier.toString()};
+
+                                                                  var inboundResponseSociety = EP_SOCIETY->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
+                                                                                                                if (inboundResponseSociety is http:Response) {
+                                                                                                                  
+                                                                                                                    var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
+                                                                                                                      //io:print("status",inboundPayloadSociety);
+                                                                                                                    if (inboundPayloadSociety is json) {
+                                                                                                                          //society=inboundPayloadSociety;
+                                                                                                                          idSociete=int_process(inboundPayloadSociety.societies.society.idSociete);
+                                                                                                                          idPersonne=int_process(inboundPayloadSociety.societies.society.idPersonne);
+                                                                                                                          company_name=string_process(inboundPayloadSociety.societies.society.denominationSocial);
+                                                                                                                            societe={"idSociete":idSociete,"company_name":company_name};
+
+                                                                                                                    } 
+                                                                                                                   
+                                                                                                                } 
+
+
+
+                                                                json person={};
+                                                                
+                                                                var inboundResponsePerson = EP_PERSON->get("/getPersonInformationByPersonId?idPersonne="+idPersonne.toString(), request);
+                                                                                    if (inboundResponsePerson is http:Response) {
+                                                                                        var inboundPayloadPerson = inboundResponsePerson.getJsonPayload();
+                                                                                        // io:print("status",inboundPayloadPerson);
+                                                                                        if (inboundPayloadPerson is json) {
+                                                                                            person=inboundPayloadPerson;
+                                                                                        
+                                                                                        } 
+                                                                                        //io:print("error when fetching person");
+                                                                                    } 
+                                                                                    folder_list[i]={"dossier":dossier,"societe":societe,"personne":person};
+                                                                }
+                                                                                                                                                    
+                                                                                        
+                                
+                            
+                            } }
        
     json [] aggregatedResponse = folder_list;
     io:print(aggregatedResponse);
