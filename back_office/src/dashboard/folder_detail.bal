@@ -9,6 +9,7 @@ var env_prod1="http://13.232.204.228:8290";
 http:Client societyEP1 = new(env_dev1+"/services/societe");
 http:Client personEP1= new(env_dev1+"/services/personne");
 http:Client dossierEP1 =new(env_dev1+"/services/dossierSoumission");
+http:Client localisationEP1=new(env_dev1+"/services/localisation");
 @docker:Config {
    name: "get_folder_information"
  }
@@ -50,12 +51,16 @@ service getSubmitedFormById on new http:Listener(7001) {
             //GET SIEGE SOCIAL BY ID
          json siegeSociety={};
          var idadressSiege=0;
+         json adress_id_adress_name={};
+         string adresse="";
          var inboundResponseSocietySiege = societyEP1->get("/getSiegeSocial?idSiege="+idSiegeSocial.toString(), request);
                             if (inboundResponseSocietySiege is http:Response) {
                                 var inboundPayloadSocietySiege = inboundResponseSocietySiege.getJsonPayload();
                                 if (inboundPayloadSocietySiege is json) {
+                                    io:print("ADRDD",inboundPayloadSocietySiege);
                                     siegeSociety=inboundPayloadSocietySiege;
                                     idadressSiege=iprocess(inboundPayloadSocietySiege.sieges.siege.adresseSiegeSocial);
+                                   
                                     io:print("id adress"+idadressSiege.toString());
                                 } 
                                  io:print("error when fetching siege social");
@@ -68,7 +73,27 @@ service getSubmitedFormById on new http:Listener(7001) {
                                 var inboundPayloadSocietySiegeAdress = inboundResponseSocietySiegeAdress.getJsonPayload();
                                 io:print(inboundPayloadSocietySiegeAdress);
                                 if (inboundPayloadSocietySiegeAdress is json) {
-                                    siegeSocietyAdress=inboundPayloadSocietySiegeAdress;
+                                    //adresse=processString(inboundPayloadSocietySiege.sieges.siege.adresse);
+                                     io:print("id adress"+idadressSiege.toString());
+                                    int id_f=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idFokontany);
+                                    int id_b=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idArrondissement);
+                                    int id_c=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idCommune);
+                                    int id_d=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idDistrict);
+                                    int id_r=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idRegion);
+                                    int id_p=iprocess(inboundPayloadSocietySiegeAdress.adresses.adresse.idProvince);
+                                    adresse=processString(inboundPayloadSocietySiegeAdress.adresses.adresse.adresse);
+                                    
+                                    var inboudResponseLocalisationName=localisationEP1->get("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString(),request);
+                                    if(inboudResponseLocalisationName is http:Response)
+                                    {
+                                        var inboundPayloadLocalisation=inboudResponseLocalisationName.getJsonPayload();
+                                        io:print("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString());
+                                        if(inboundPayloadLocalisation is json){
+                                            siegeSocietyAdress={"region":inboundPayloadLocalisation,"adress":adresse};
+                                        }
+                                    }
+                                    
+                                    
                                    
                                     
                                 } 
@@ -88,11 +113,33 @@ service getSubmitedFormById on new http:Listener(7001) {
                                  io:print("error when fetching person");
                             } 
          json personAdress={};
+         string adresse_p="";
          var inboundResponsePersonAdress = personEP1->get("/getAdressPerson?idAdressePerson="+idAdressPerson.toString(), request);
                             if (inboundResponsePersonAdress is http:Response) {
                                 var inboundPayloadPersonAdress = inboundResponsePersonAdress.getJsonPayload();
                                 if (inboundPayloadPersonAdress is json) {
-                                    personAdress=inboundPayloadPersonAdress;
+
+                                      io:print("id adress"+idadressSiege.toString());
+                                    int id_f=iprocess(inboundPayloadPersonAdress.adresses.adresse.idFokontany);
+                                    int id_b=iprocess(inboundPayloadPersonAdress.adresses.adresse.idArrondissement);
+                                    int id_c=iprocess(inboundPayloadPersonAdress.adresses.adresse.idCommune);
+                                    int id_d=iprocess(inboundPayloadPersonAdress.adresses.adresse.idDistrict);
+                                    int id_r=iprocess(inboundPayloadPersonAdress.adresses.adresse.idRegion);
+                                    int id_p=iprocess(inboundPayloadPersonAdress.adresses.adresse.idProvince);
+                                    adresse_p=processString(inboundPayloadPersonAdress.adresses.adresse.adresse);
+                                    
+                                    var inboudResponseLocalisationName=localisationEP1->get("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString(),request);
+                                    if(inboudResponseLocalisationName is http:Response)
+                                    {
+                                        var inboundPayloadLocalisation=inboudResponseLocalisationName.getJsonPayload();
+                                        io:print("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString());
+                                        if(inboundPayloadLocalisation is json){
+                                            personAdress={"region":inboundPayloadLocalisation,"adress":adresse_p};
+                                        }
+                                    }
+                                    
+                                   // personAdress=inboundPayloadPersonAdress;
+
                                   
                                     
                                 } 
@@ -158,5 +205,16 @@ function iprocess(json|error je) returns @untainted int {
     } else {
         //io:println("Error on JSON access: ", je.detail()?.message);
         return 0;
+    }
+}
+function processString(json|error je) returns @untainted string {
+    if (je is json) {
+        // The type test needs to be used first, to use the resultant value
+        // as a JSON value.
+        io:println("JSON value: ", je);
+        return je.toString();
+    } else {
+        //io:println("Error on JSON access: ", je.detail()?.message);
+        return "no";
     }
 }

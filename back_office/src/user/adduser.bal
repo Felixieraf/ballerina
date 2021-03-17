@@ -17,6 +17,9 @@ http:Client userKeycloakEP=new(env_keycloak+"/auth/admin/realms/EDBM");
 @docker:Config {
    name: "add_user"
  }
+ @docker:CopyFiles {
+    files: [{sourceFile: "./Ballerina.toml", target: "/home/ballerina/Ballerina.toml", isBallerinaConf: true}]
+}
  service user on new http:Listener(7002) {
 
 

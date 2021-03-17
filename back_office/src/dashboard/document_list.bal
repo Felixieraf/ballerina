@@ -26,14 +26,21 @@ service get_list_dossier on new http:Listener(7004) {
 
         var _limit= <@untainted>req.getQueryParamValue("limit");
         var _offset= <@untainted>req.getQueryParamValue("offset");
+        var _tri=<@untainted>req.getQueryParamValue("tri");
         int _endValue=<int>langint:fromString(_limit.toString());
+        int _triValue=<int>langint:fromString(_tri.toString());
         json [] folder_list=[];
+        http:Response inboundResponseFolder=new ;
        
         http:Request request = new;
         request.addHeader("Accept", "application/json");
         json folder={};
-       var inboundResponseFolder = EP_DOSSIER->get("/getListFolder?offset="+_offset.toString()+"&limit="+_limit.toString(),request);
-                            if (inboundResponseFolder is http:Response) {
+        if (_triValue==1)
+         {inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderASC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);}
+        else   
+         {inboundResponseFolder =<http:Response> EP_DOSSIER->get("/getListFolderDESC?offset="+_offset.toString()+"&limit="+_limit.toString(),request);}               
+                                io:print(inboundResponseFolder.statusCode);
+                                io:print(_triValue);
                                 var inboundPayloadFolder = inboundResponseFolder.getJsonPayload();
                                 
                                 if (inboundPayloadFolder is json) {
@@ -91,7 +98,7 @@ service get_list_dossier on new http:Listener(7004) {
                                                                 }
                                                                                                                                                     
                                                                                         
-                                } 
+                                
                             
                             } 
        
