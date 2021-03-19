@@ -3,8 +3,8 @@ import ballerina/io;
 import ballerina/docker;
 import ballerina/config;
 
-var env_keycloak=config:getAsString("host.keycloak");
-http:Client userKeycloakEP =new(env_keycloak);
+var env=config:getAsString("host.keycloak");
+http:Client userKeycloakEP =new(env);
 @docker:Config {
    name: "user_information"
  }
