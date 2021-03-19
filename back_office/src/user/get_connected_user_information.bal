@@ -4,7 +4,7 @@ import ballerina/docker;
 import ballerina/config;
 
 var env=config:getAsString("host.keycloak");
-http:Client userKeycloakEP =new(env);
+http:Client userKeycloakEP1 =new(env);
 @docker:Config {
    name: "user_information"
  }
@@ -46,7 +46,7 @@ function invokeUserEP(string  token) returns @untainted json {
     request.addHeader("Authorization", "Bearer "+token.toString());
     var user_id="";
    
-    var inboundResponseUserKeycloak = userKeycloakEP->get("/auth/realms/EDBM/protocol/openid-connect/userinfo", request);
+    var inboundResponseUserKeycloak = userKeycloakEP1->get("/auth/realms/EDBM/protocol/openid-connect/userinfo", request);
                             if (inboundResponseUserKeycloak is http:Response) {
                                 io:print("ok",inboundResponseUserKeycloak);
                               var user_info=inboundResponseUserKeycloak.getJsonPayload();
@@ -58,7 +58,7 @@ function invokeUserEP(string  token) returns @untainted json {
                                    
                                         user_id=string_process(user_info.sub);
                                        
-                                        var inboundResponseUserGroupKeycloak =  userKeycloakEP->get("/auth/admin/realms/EDBM/users/"+user_id.toString()+"/groups", request);
+                                        var inboundResponseUserGroupKeycloak =  userKeycloakEP1->get("/auth/admin/realms/EDBM/users/"+user_id.toString()+"/groups", request);
                                         if (inboundResponseUserGroupKeycloak is http:Response) {
                                             var group_user_info=inboundResponseUserGroupKeycloak.getJsonPayload();
                                             if(group_user_info is json)
