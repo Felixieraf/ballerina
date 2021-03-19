@@ -1,9 +1,10 @@
 import ballerina/http;
 import ballerina/io;
 import ballerina/docker;
+import ballerina/config;
 
-
-http:Client userKeycloakEP =new("http://13.232.204.228:8081");
+var env_keycloak=config:getAsString("host.keycloak");
+http:Client userKeycloakEP =new(env_keycloak);
 @docker:Config {
    name: "user_information"
  }
@@ -43,21 +44,52 @@ function invokeUserEP(string  token) returns @untainted json {
     http:Request request = new;
     request.addHeader("Content-Type", "application/json");
     request.addHeader("Authorization", "Bearer "+token.toString());
-    
+    var user_id="";
    
     var inboundResponseUserKeycloak = userKeycloakEP->get("/auth/realms/EDBM/protocol/openid-connect/userinfo", request);
                             if (inboundResponseUserKeycloak is http:Response) {
                                 io:print("ok",inboundResponseUserKeycloak);
-                                var user_info=inboundResponseUserKeycloak.getJsonPayload();
-                                 //io:print(user_info);
-                                if(inboundResponseUserKeycloak.statusCode===200)
+                              var user_info=inboundResponseUserKeycloak.getJsonPayload();
+                                if(user_info is json)
                                 {
-                                    io:print(user_info.sub.toString());
-                                      
-                                }
+                                   
+                                    if(inboundResponseUserKeycloak.statusCode===200)
+                                    {
+                                   
+                                        user_id=string_process(user_info.sub);
+                                       
+                                        var inboundResponseUserGroupKeycloak =  userKeycloakEP->get("/auth/admin/realms/EDBM/users/"+user_id.toString()+"/groups", request);
+                                        if (inboundResponseUserGroupKeycloak is http:Response) {
+                                            var group_user_info=inboundResponseUserGroupKeycloak.getJsonPayload();
+                                            if(group_user_info is json)
+                                            {
+                                            
+                                                return {user_info,group_user_info};
 
-                                 return {message: "ERROR"};
+                                            }
+                                        
+                                
                             } 
+
+                                        
+                                    }
+
+                                }
+                               
+                                
+                            } 
+                             return {message: "ERROR"};
   
    
+}
+function string_process(json|error je) returns @untainted string {
+    if (je is json) {
+        // The type test needs to be used first, to use the resultant value
+        // as a JSON value.
+        io:println("JSON value: ", je);
+        return je.toString();
+    } else {
+        //io:println("Error on JSON access: ", je.detail()?.message);
+        return "";
+    }
 }
