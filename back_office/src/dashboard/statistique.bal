@@ -2,11 +2,11 @@
 import ballerina/http;
 import ballerina/docker;
 import ballerina/io;
-import ballerina/config;
 
 
 
-var env_wso2=config:getAsString("host.wso2");
+
+
 
 http:Client EP =new("http://127.0.0.1:8290/services/dossierSoumission");
 @docker:Config {

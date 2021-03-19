@@ -10,6 +10,8 @@ http:Client societyEP1 = new(env_dev1+"/services/societe");
 http:Client personEP1= new(env_dev1+"/services/personne");
 http:Client dossierEP1 =new(env_dev1+"/services/dossierSoumission");
 http:Client localisationEP1=new(env_dev1+"/services/localisation");
+
+
 @docker:Config {
    name: "get_folder_information"
  }
@@ -32,6 +34,8 @@ service getSubmitedFormById on new http:Listener(7001) {
         var idPersonne=0;
         var idSociete=0;
         var idSiegeSocial=0;
+        var idCategory="'";
+       
         json society={};
         request.addHeader("Accept", "application/json");
         
@@ -40,13 +44,24 @@ service getSubmitedFormById on new http:Listener(7001) {
                             if (inboundResponseSociety is http:Response) {
                                 var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
                                 if (inboundPayloadSociety is json) {
-                                     society=inboundPayloadSociety;
+                                     var category="";
                                     idSociete=iprocess(inboundPayloadSociety.societies.society.idSociete);
                                     idPersonne=iprocess(inboundPayloadSociety.societies.society.idPersonne);
                                     idSiegeSocial=iprocess(inboundPayloadSociety.societies.society.idSiegeSocial);
-                                  
-                                } 
-                                 io:print("error when fetching society by folder");
+                                    idCategory=processString(inboundPayloadSociety.societies.society.activitePrincipal);
+                                    http:Client siteInformationEP1=new(env_dev1+"/services/siteInformation");
+                                      io:print("idcategory",idCategory);
+                                    var inboundResponseActivity = siteInformationEP1->get("/getCategoryName?id="+idCategory.toString(), request);
+                                    if (inboundResponseActivity is http:Response) {
+                                        var inboundPayloadCategory = inboundResponseActivity.getJsonPayload();
+                                        if (inboundPayloadCategory is json) {
+                                            category=processString(inboundPayloadCategory.categoryNames.categoryName.descriptivesCategorie_fr);
+                                        } 
+                                       
+                                    } 
+                                        society={inboundPayloadSociety,"categorie":category};
+                                    } 
+                                 
                             } 
             //GET SIEGE SOCIAL BY ID
          json siegeSociety={};

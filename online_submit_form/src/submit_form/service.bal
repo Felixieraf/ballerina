@@ -149,6 +149,7 @@ json playload=  outboundPayload;
      var nombreAssociePersPhysique= process(playload.step2.nombreAssociePersPhysique);
      var nombreAssociePersMorale= process(playload.step2.nombreAssociePersMorale);
      var nombreDirigeant= process(playload.step2.nombreDirigeant);
+     var numeroDossier= process(playload.step2.numeroDossier);
      // "idPersonne":4           
     
     
@@ -235,7 +236,7 @@ json playload=  outboundPayload;
                                                 json payloadNumDossier={
                                                                             "_postaddFolderNumber":{
                                                                             
-                                                                                "numeroDossier":process(val)
+                                                                                "numeroDossier":numeroDossier
                                                                             }
                                                                         };
 
