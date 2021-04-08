@@ -61,14 +61,35 @@ function invokeAllEndpoint(http:Client clientEPPerson,http:Client clientEPSociet
     var idRegion=process(playload.step1.adresse.idRegion);
     var adresse=processString(playload.step1.adresse.adresse);
     var idArrondissement=process(playload.step1.adresse.idArrondissement);
+    var tel2=processString(playload.step1.personne.tel2);
     // Personne information
     var nom=processString(playload.step1.personne.nom);
     var prenom=processString(playload.step1.personne.prenom);
     var idRole=process(playload.step1.personne.idRole);             
     var tel=processString(playload.step1.personne.tel);
     var e_mail=processString(playload.step1.personne.e_mail);
-    var societe_mandataire=processString(playload.step1.personne.societe_mandataire);                 
-    json playloadAdress=     {
+    var societe_mandataire=processString(playload.step1.personne.societe_mandataire);
+    var ipAdress=processString(playload.step4.ipAdress);   
+    var idIpAdress=0; 
+    var ipStatus="";
+     // CALL isBlacklist to verify IP adress
+     http:Request request = new;
+    request.addHeader("Accept", "application/json");
+      var inboundResponseIsBlackList= dossierEP->get("/checkBlackList?ipAdress="+ipAdress.toString(),request);
+                                                    if (inboundResponseIsBlackList is http:Response) {
+                                                        var inboundPayloadDossierIpAdresss = inboundResponseIsBlackList.getJsonPayload();
+                                                           
+                                                        if (inboundPayloadDossierIpAdresss is json) {
+                                                           ipStatus=processString(inboundPayloadDossierIpAdresss.isBlackLists.isBlackList.blacklist);
+                                                           io:println(inboundResponseIsBlackList.statusCode); 
+                                                           idIpAdress=process(inboundPayloadDossierIpAdresss.isBlackLists.isBlackList.id);
+                                                           io:println("get ip status",ipStatus);    
+                                                           io:println("idIpAdress",idIpAdress);                 
+                                                             }
+                                                       
+                                                        }       
+    if(ipStatus == "false"){
+        json playloadAdress=     {
                                     "_postaddAdressPerson": {
                                         
                                             "idFokontany":idFokontany,
@@ -80,210 +101,249 @@ function invokeAllEndpoint(http:Client clientEPPerson,http:Client clientEPSociet
                                             "idArrondissement":idArrondissement
                                     }
                                 };
-    var idAdressPerson=0;
-    // CALL API ADD PERSON ADRESS
-    var inboundResponsePersonAdress = clientEPPerson->post("/addAdressPerson", playloadAdress);
-        if (inboundResponsePersonAdress is http:Response) {
-            var inboundPayloadAdressId = inboundResponsePersonAdress.getJsonPayload();
-                if (inboundPayloadAdressId is json) {
-                    idAdressPerson=process(inboundPayloadAdressId.idAdresses.idAdresse);
-                    io:println(idAdressPerson);
-                    json playloadPerson= {
-                                            "_postaddPersonOnOnlineForm": {
-                                                
-                                                        "nom": nom,
-                                                        "prenom": prenom,
-                                                        "idAdresse":idAdressPerson,
-                                                        "idRole":idRole,
-                                                        "tel":tel,
-                                                        "e_mail":e_mail,
-                                                        "societe_mandataire":societe_mandataire 
-                                            }
-                                        };
-                                        //CALL API ADD PERSON
-                            var inboundResponsePerson = clientEPPerson->post("/addPersonOnOnlineForm", playloadPerson);
-                            if (inboundResponsePerson is http:Response) {
-                                var inboundPayloadPerson = inboundResponsePerson.getJsonPayload();
-                                if (inboundPayloadPerson is json) {
-                                    idPersonne=process(inboundPayloadPerson.person_ids.person_id);
-                                  
-                                    return   invokeEndpointSociety(clientEPSociety,outboundPayload,idPersonne);
+        var idAdressPerson=0;
+        // CALL API ADD PERSON ADRESS
+        var inboundResponsePersonAdress = clientEPPerson->post("/addAdressPerson", playloadAdress);
+            if (inboundResponsePersonAdress is http:Response) {
+                var inboundPayloadAdressId = inboundResponsePersonAdress.getJsonPayload();
+                    if (inboundPayloadAdressId is json) {
+                        idAdressPerson=process(inboundPayloadAdressId.idAdresses.idAdresse);
+                        io:println(idAdressPerson);
+                        json playloadPerson= {
+                                                "_postaddPersonOnOnlineForm": {
+                                                    
+                                                            "nom": nom,
+                                                            "prenom": prenom,
+                                                            "idAdresse":idAdressPerson,
+                                                            "idRole":idRole,
+                                                            "tel":tel,
+                                                            "e_mail":e_mail,
+                                                            "societe_mandataire":societe_mandataire,
+                                                            "tel2":tel2
+                                                }
+                                            };
+                                            //CALL API ADD PERSON
+                                var inboundResponsePerson = clientEPPerson->post("/addPersonOnOnlineForm", playloadPerson);
+                                if (inboundResponsePerson is http:Response) {
+                                    var inboundPayloadPerson = inboundResponsePerson.getJsonPayload();
+                                    if (inboundPayloadPerson is json) {
+                                        idPersonne=process(inboundPayloadPerson.person_ids.person_id);
+                                    io:println(ipAdress,ipStatus,idIpAdress);
+                                        return   invokeEndpointSociety(clientEPSociety,outboundPayload,idPersonne,ipAdress,ipStatus,idIpAdress);
+                                    } 
                                 } 
-                            } 
-                   
+                    
 
 
 
-                    return {message:inboundPayloadAdressId};
-                } 
-                return {message:"error add Person"};
-    }
+                        return {message:inboundPayloadAdressId};
+                    } 
+                 return {message:"error add Person"};
+            }
     
 
+    }       
+    
     return {message: "erreur"};
 }
 
 
-function invokeEndpointSociety(http:Client clientEPSociety,json outboundPayload,int idPersonne) returns @untainted json {
-json playload=  outboundPayload;
-    // Siège Social
-     var dureebail=process(playload.step3.siege.dureebail);
-     var montantBail=process(playload.step3.siege.montantBail);
-    
-     var idTypeBailleur=process(playload.step3.siege.idTypeBailleur);
-     var idTypeContrat=process(playload.step3.siege.idTypeContrat);
+function invokeEndpointSociety(http:Client clientEPSociety,json outboundPayload,int idPersonne,string ipAdress,string ipStatus,int idIpAdress) returns @untainted json {
+        if(ipStatus == "false"){
+                json playload=  outboundPayload;
+                // Siège Social
+                var dureebail=process(playload.step3.siege.dureebail);
+                var montantBail=process(playload.step3.siege.montantBail);
+                
+                var idTypeBailleur=process(playload.step3.siege.idTypeBailleur);
+                var idTypeContrat=process(playload.step3.siege.idTypeContrat);
 
-     // Society information
-     var denominationSocial=processString(playload.step2.denominationSocial);
-     var activitePrincipal=processString(playload.step2.activitePrincipal);
-     var formeJuridique=processString(playload.step2.formeJuridique);
-     var idFormeJuridique=process(playload.step2.idFormeJuridique);
-     var dateStatut=processString(playload.step2.dateStatut);
-     var capital=processFloat(playload.step2.capital);
-     var activiteImportExport=process(playload.step2.activiteImportExport);
-     var activiteIndustrielCollecteur=process(playload.step2.activiteIndustrielCollecteur);
-     var objetSocial= processString(playload.step2.objetSocial);
-     var activiteGrossiste= process(playload.step2.activiteGrossiste);
-     var autreActiviteReglemente=process(playload.step2.autreActiviteReglemente);
-     var choixImposition=process(playload.step2.choixImposition);
-     var nombreAssociePersPhysique= process(playload.step2.nombreAssociePersPhysique);
-     var nombreAssociePersMorale= process(playload.step2.nombreAssociePersMorale);
-     var nombreDirigeant= process(playload.step2.nombreDirigeant);
-     var numeroDossier= processString(playload.step2.numeroDossier);
-     // "idPersonne":4           
-    
-    
-    // CALL API ADD SIEGE SOCIAL ADDRESS
-    // Adresse Siege Social setting outbound
-    int idFokontany=process(playload.step3.adresse.idFokontany);
-    var idCommune=process(playload.step3.adresse.idCommune);
-    var idDistrict=process(playload.step3.adresse.idDistrict);
-    var idProvince=process(playload.step3.adresse.idProvince);
-    var idRegion=process(playload.step3.adresse.idRegion);
-    var adresse=processString(playload.step3.adresse.adresse);
-    var idArrondissement=process(playload.step3.adresse.idArrondissement);
-     json playloadAdress=     {
-                                    "_postaddAdressSociety": {
-                                        
-                                            "idFokontany":idFokontany,
-                                            "idCommune":idCommune,
-                                            "idDistrict":idDistrict, 
-                                            "idProvince":idProvince,
-                                            "idRegion":idRegion,
-                                            "adresse":adresse,
-                                            "idArrondissement":idArrondissement
-                                    }
-                                };
-    // CALL API ADD SOCIETY ADRESS
-
-    var inboundResponseSocietyAdress = clientEPSociety->post("/addAdressSociety", playloadAdress);
-        if (inboundResponseSocietyAdress is http:Response) {
-            var inboundPayloadAdressId = inboundResponseSocietyAdress.getJsonPayload();
-                if (inboundPayloadAdressId is json) {
-                    var adresseSiegeSocial=process(inboundPayloadAdressId.idAdresses.idAdresse);
-                     //playload idSiegeSocial
-                    json playloadSiegeSocial={
-                                                "_postaddSiegeSocial":{
-                                                    "dureebail":dureebail,
-                                                    "montantBail":montantBail,
-                                                    "adresseSiegeSocial":adresseSiegeSocial,
-                                                    "idTypeBailleur":idTypeBailleur,
-                                                    "idTypeContrat":idTypeContrat
+                // Society information
+                var denominationSocial=processString(playload.step2.denominationSocial);
+                var activitePrincipal=processString(playload.step2.activitePrincipal);
+                var formeJuridique=processString(playload.step2.formeJuridique);
+                var idFormeJuridique=process(playload.step2.idFormeJuridique);
+                var dateStatut=processString(playload.step2.dateStatut);
+                var capital=processFloat(playload.step2.capital);
+                var activiteImportExport=process(playload.step2.activiteImportExport);
+                var activiteIndustrielCollecteur=process(playload.step2.activiteIndustrielCollecteur);
+                var objetSocial= processString(playload.step2.objetSocial);
+                var activiteGrossiste= process(playload.step2.activiteGrossiste);
+                var autreActiviteReglemente=process(playload.step2.autreActiviteReglemente);
+                var choixImposition=process(playload.step2.choixImposition);
+                var nombreAssociePersPhysique= process(playload.step2.nombreAssociePersPhysique);
+                var nombreAssociePersMorale= process(playload.step2.nombreAssociePersMorale);
+                var nombreDirigeant= process(playload.step2.nombreDirigeant);
+                var numeroDossier= processString(playload.step2.numeroDossier);
+                var _idIpAdress=0;    
+                var tva=process(playload.step2.tva);
+                
+               
+                // CALL API ADD SIEGE SOCIAL ADDRESS
+                // Adresse Siege Social setting outbound
+                int idFokontany=process(playload.step3.adresse.idFokontany);
+                var idCommune=process(playload.step3.adresse.idCommune);
+                var idDistrict=process(playload.step3.adresse.idDistrict);
+                var idProvince=process(playload.step3.adresse.idProvince);
+                var idRegion=process(playload.step3.adresse.idRegion);
+                var adresse=processString(playload.step3.adresse.adresse);
+                var idArrondissement=process(playload.step3.adresse.idArrondissement);
+            
+                var isBlackList=processBool(playload.step4.blacklist);
+                
+                json payloadIpAdress={
+                                            "postipadress":{
+                                                "blacklist":isBlackList,
+                                                "ipAdress":ipAdress
+                                            }
+                                        };
+                json playloadAdress=     {
+                                                "_postaddAdressSociety": {
+                                                    
+                                                        "idFokontany":idFokontany,
+                                                        "idCommune":idCommune,
+                                                        "idDistrict":idDistrict, 
+                                                        "idProvince":idProvince,
+                                                        "idRegion":idRegion,
+                                                        "adresse":adresse,
+                                                        "idArrondissement":idArrondissement
                                                 }
                                             };
-                    io:println(adresseSiegeSocial);
-                    
-                                        //CALL API ADD SIEGE SOCIAL
-                           var inboundResponseSiegeSocial = clientEPSociety->post("/addSiegeSocial", playloadSiegeSocial);
-                            if (inboundResponseSiegeSocial is http:Response) {
-                                var inboundPayloadSiegeSocial = inboundResponseSiegeSocial.getJsonPayload();
-                                if (inboundPayloadSiegeSocial is json) {
-                                    var idSiegeSocial=process(inboundPayloadSiegeSocial.idSiege.idSiege);
-                                    json playloadSociety= {
-                                                        "_postaddaddSocietyForm":{
-                                                            "denominationSocial":denominationSocial,
-                                                            "activitePrincipal":activitePrincipal,
-                                                            "formeJuridique":formeJuridique,
-                                                            "dateStatut":dateStatut,
-                                                            "capital":capital,  
-                                                            "activiteImportExport":activiteImportExport, 
-                                                            "activiteIndustrielCollecteur":activiteIndustrielCollecteur, 
-                                                            "objetSocial":objetSocial, 
-                                                            "activiteGrossiste":activiteGrossiste, 
-                                                            "autreActiviteReglemente":autreActiviteReglemente,
-                                                            "choixImposition":choixImposition, 
-                                                            "nombreAssociePersPhysique":nombreAssociePersPhysique,
-                                                            "nombreAssociePersMorale":nombreAssociePersMorale, 
-                                                            "nombreDirigeant":nombreDirigeant, 
-                                                            "idPersonne":idPersonne,
-                                                            "idSiegeSocial":idSiegeSocial,
-                                                            "idFormeJuridique":idFormeJuridique
-                                                            
-                                                        }
-                                                    } ;
-                                                    // CALL API ADD SOCIETY
-                                   var inboundResponseSociety = clientEPSociety->post("/addSocietyForm", playloadSociety);
-                                   var idSociety=0;
-                                        if (inboundResponseSociety is http:Response) {
-                                            var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
-                                            if (inboundPayloadSociety is json) {
-                                                 idSociety=process(inboundPayloadSociety.idSocietes.idSociete);
-                                                var document_id=idFormeJuridique.toString()+idSociety.toString()+idSiegeSocial.toString();
-                                                int|error val = langint:fromString(document_id.toString());
-                                                io:println("id_document:",val);
-                                                json idDossierSoc={"id_document:":""+val.toString()};
-                                                json inboundPlayloadDossier={};
-                                                json payloadNumDossier={
-                                                                            "_postaddFolderNumber":{
-                                                                            
-                                                                                "numeroDossier":numeroDossier
-                                                                            }
-                                                                        };
 
-                                                var inboundResponseDossier = dossierEP->post("/addFolderNumber", payloadNumDossier);
-                                                    if (inboundResponseDossier is http:Response) {
-                                                        var inboundPayloadDossier = inboundResponseDossier.getJsonPayload();
-                                                        if (inboundPayloadDossier is json) {
-                                                            
-                                                            //json idDossierSoc={"id_document:":""+val.toString()};
-                                                            inboundPlayloadDossier=inboundPayloadDossier;
-                                                            var idDossier=process(inboundPayloadDossier.idDossiers.idDossier);
-                                                            json payloadPutFolderNumber={"_putsetsocetyfolder":
-                                                                                            {
-                                                                                                "idSociete":idSociety,
-                                                                                                "idDossier":idDossier
+                // CALL API ADD IP ADRESS 
+                if(idIpAdress == 0){
+                          var inboundResponseIpAdress = dossierEP->post("/addIpAdress", payloadIpAdress);
+                                                                if (inboundResponseIpAdress is http:Response) {
+                                                                    var inboundPayloadDossierIpAdresss = inboundResponseIpAdress.getJsonPayload();
+                                                                    if (inboundPayloadDossierIpAdresss is json) {
+                                                                    _idIpAdress=process(inboundPayloadDossierIpAdresss.idIpAdresses.idIpAdress);
+                                                                    io:println("ajout adress avec succees");                     
+                                                                        }
+                                                                
+                                                                    } 
+                }
+                else
+                {
+                     _idIpAdress=idIpAdress;
+                }
+               
 
-                                                                                            }
-                                                                                        };
-                                                                                         io:println("test....");
-                                                             var inboundResponceUpdateSociety=clientEPSociety->put("/setSocetyFolder",payloadPutFolderNumber);
-                                                             if(inboundResponceUpdateSociety is http:Response){
-                                                                 io:println("Folder updated");
-                                                             }
-                                                             //return folder id and society id
-                                                        return {inboundPayloadDossier,"idSociete":idSociety};
+              
+                                                                
+                // CALL API ADD SOCIETY ADRESS
+
+                var inboundResponseSocietyAdress = clientEPSociety->post("/addAdressSociety", playloadAdress);
+                    if (inboundResponseSocietyAdress is http:Response) {
+                        var inboundPayloadAdressId = inboundResponseSocietyAdress.getJsonPayload();
+                            if (inboundPayloadAdressId is json) {
+                                var adresseSiegeSocial=process(inboundPayloadAdressId.idAdresses.idAdresse);
+                                //playload idSiegeSocial
+                                json playloadSiegeSocial={
+                                                            "_postaddSiegeSocial":{
+                                                                "dureebail":dureebail,
+                                                                "montantBail":montantBail,
+                                                                "adresseSiegeSocial":adresseSiegeSocial,
+                                                                "idTypeBailleur":idTypeBailleur,
+                                                                "idTypeContrat":idTypeContrat
+                                                            }
+                                                        };
+                                io:println(adresseSiegeSocial);
+                                
+                                                    //CALL API ADD SIEGE SOCIAL
+                                    var inboundResponseSiegeSocial = clientEPSociety->post("/addSiegeSocial", playloadSiegeSocial);
+                                        if (inboundResponseSiegeSocial is http:Response) {
+                                            var inboundPayloadSiegeSocial = inboundResponseSiegeSocial.getJsonPayload();
+                                            if (inboundPayloadSiegeSocial is json) {
+                                                var idSiegeSocial=process(inboundPayloadSiegeSocial.idSiege.idSiege);
+                                                json playloadSociety= {
+                                                                    "_postaddaddSocietyForm":{
+                                                                        "denominationSocial":denominationSocial,
+                                                                        "activitePrincipal":activitePrincipal,
+                                                                        "formeJuridique":formeJuridique,
+                                                                        "dateStatut":dateStatut,
+                                                                        "capital":capital,  
+                                                                        "activiteImportExport":activiteImportExport, 
+                                                                        "activiteIndustrielCollecteur":activiteIndustrielCollecteur, 
+                                                                        "objetSocial":objetSocial, 
+                                                                        "activiteGrossiste":activiteGrossiste, 
+                                                                        "autreActiviteReglemente":autreActiviteReglemente,
+                                                                        "choixImposition":choixImposition, 
+                                                                        "nombreAssociePersPhysique":nombreAssociePersPhysique,
+                                                                        "nombreAssociePersMorale":nombreAssociePersMorale, 
+                                                                        "nombreDirigeant":nombreDirigeant, 
+                                                                        "idPersonne":idPersonne,
+                                                                        "idSiegeSocial":idSiegeSocial,
+                                                                        "idFormeJuridique":idFormeJuridique,
+                                                                        "tva":tva
+                                                                        
+                                                                    }
+                                                                } ;
+                                                                // CALL API ADD SOCIETY
+                                            
+
+                                            var inboundResponseSociety = clientEPSociety->post("/addSocietyForm", playloadSociety);
+                                            var idSociety=0;
+                                                    if (inboundResponseSociety is http:Response) {
+                                                        var inboundPayloadSociety = inboundResponseSociety.getJsonPayload();
+                                                        if (inboundPayloadSociety is json) {
+                                                            idSociety=process(inboundPayloadSociety.idSocietes.idSociete);
+                                                            var document_id=idFormeJuridique.toString()+idSociety.toString()+idSiegeSocial.toString();
+                                                            int|error val = langint:fromString(document_id.toString());
+                                                            io:println("id_document:",val);
+                                                            json idDossierSoc={"id_document:":""+val.toString()};
+                                                            json inboundPlayloadDossier={};
+                                                            json payloadNumDossier={
+                                                                                        "_postaddFolderNumber":{
+                                                                                        
+                                                                                            "numeroDossier":numeroDossier,
+                                                                                            "idIpAdress":_idIpAdress
+                                                                                        }
+                                                                                    };
+
+                                                            var inboundResponseDossier = dossierEP->post("/addFolderNumber", payloadNumDossier);
+                                                                if (inboundResponseDossier is http:Response) {
+                                                                    var inboundPayloadDossier = inboundResponseDossier.getJsonPayload();
+                                                                    if (inboundPayloadDossier is json) {
+                                                                        
+                                                                        //json idDossierSoc={"id_document:":""+val.toString()};
+                                                                        inboundPlayloadDossier=inboundPayloadDossier;
+                                                                        var idDossier=process(inboundPayloadDossier.idDossiers.idDossier);
+                                                                        json payloadPutFolderNumber={"_putsetsocetyfolder":
+                                                                                                        {
+                                                                                                            "idSociete":idSociety,
+                                                                                                            "idDossier":idDossier
+
+                                                                                                        }
+                                                                                                    };
+                                                                                                    io:println("test....");
+                                                                        var inboundResponceUpdateSociety=clientEPSociety->put("/setSocetyFolder",payloadPutFolderNumber);
+                                                                        if(inboundResponceUpdateSociety is http:Response){
+                                                                            io:println("Folder updated");
+                                                                        }
+                                                                        //return folder id and society id
+                                                                    return {inboundPayloadDossier,"idSociete":idSociety};
+                                                                    } 
+                                                                } 
+
+                                                        return {inboundPayloadSociety};
                                                         } 
                                                     } 
-
-                                             return {inboundPayloadSociety};
+                                                    return inboundPayloadSiegeSocial;
                                             } 
+                                            //return inboundPayloadSiegeSocial;
                                         } 
-                                         return inboundPayloadSiegeSocial;
-                                } 
-                                 //return inboundPayloadSiegeSocial;
+                                    
+
+                                return{message:inboundPayloadAdressId};
+                            
                             } 
-                           
+                            return {message: "erreur step2&step3"};
+                }
 
-                    return{message:inboundPayloadAdressId};
-                   
-                } 
-                 return {message: "erreur step2&step3"};
-    }
-
-   
-    
-                             
-  
+            
+       }         
+                                        
+            
 }
 
 function process(json|error je) returns @untainted int {
@@ -319,6 +379,17 @@ function processString(json|error je) returns @untainted string {
         return je.toString();
     } else {
         //io:println("Error on JSON access: ", je.detail()?.message);
-        return "no";
+        return "false";
+    }
+}
+function processBool(json|error je) returns @untainted boolean {
+    if (je is json) {
+        // The type test needs to be used first, to use the resultant value
+        // as a JSON value.
+        io:println("JSON value: ", je);
+        return <boolean>je;
+    } else {
+        //io:println("Error on JSON access: ", je.detail()?.message);
+        return false;
     }
 }
