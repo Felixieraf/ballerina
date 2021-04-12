@@ -22,10 +22,11 @@ service get_statistique_dossier on new http:Listener(7003) {
     }
     resource function statistique(http:Caller caller, http:Request req) {
       
-        var nouveau=1;
-        var maj=2;
-        var en_cours=7;
-        var termine=6;
+      
+        var nouveau="{1}";
+        var maj="{2}";
+        var en_cours="{7,5,4,3}";
+        var termine="{6}";
         json total=0;
         json statistique={};
         http:Request request = new;
@@ -45,7 +46,7 @@ service get_statistique_dossier on new http:Listener(7003) {
     }
  
 }
-function cloneAndAggregateStatistique(int nouveau,int en_cours,int termine, json total,int maj) returns json[] {
+function cloneAndAggregateStatistique(string nouveau,string en_cours,string termine, json total,string maj) returns json[] {
     fork {
         worker w1 returns json {
         return invoqueEndpointStatus(nouveau,"nouveau");
@@ -69,11 +70,11 @@ function cloneAndAggregateStatistique(int nouveau,int en_cours,int termine, json
     return aggregatedResponse;
 }
 
-function invoqueEndpointStatus(int idStatut,string label) returns @untainted json{
+function invoqueEndpointStatus(string idStatut,string label) returns @untainted json{
 
 http:Request request = new;
 request.addHeader("Accept", "application/json");
-    var inboundResponseStat = EP->get("/getstatistiqueDossierNouveauTermine?idStatutDossier="+idStatut.toString(),request);
+    var inboundResponseStat = EP->get("/getStatistiqueOthers/"+idStatut,request);
                             if (inboundResponseStat is http:Response) {
                                 var inboundPayloadStat = inboundResponseStat.getJsonPayload();
                                 io:print(inboundResponseStat.getJsonPayload());
