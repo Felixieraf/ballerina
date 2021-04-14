@@ -60,7 +60,8 @@ service get_list_dossier on new http:Listener(7004) {
                                                                   var idPersonne=0;
                                                                   var company_name="";
                                                                   json societe={};
-                                                                  json dossier={"idDossier":j2[i].idDossier.toString(),"numeroDossier":j2[i].numeroDossier.toString(),"dateSoumission":j2[i].dateSoumission.toString(),"statutDossier":j2[i].idStatutDossier.toString()};
+                                                                  json rdv={};
+                                                                  json dossier={"idDossier":j2[i].idDossier.toString(),"numeroDossier":j2[i].numeroDossier.toString(),"dateSoumission":j2[i].dateSoumission.toString(),"statutDossier":j2[i].idStatutDossier.toString(),"statutDepot":j2[i].idStatutDepot.toString()};
 
                                                                   var inboundResponseSociety = EP_SOCIETY->get("/getSocietyByFolderId?idDossier="+idDossier.toString(), request);
                                                                                                                 if (inboundResponseSociety is http:Response) {
@@ -77,6 +78,16 @@ service get_list_dossier on new http:Listener(7004) {
                                                                                                                     } 
                                                                                                                    
                                                                                                                 } 
+                                                                var inboundRdv = EP_DOSSIER->get("/getListRdv?idDossier="+idDossier.toString(), request);
+                                                                if (inboundRdv is http:Response) {
+                                                                    var inboundPayloadRdv = inboundRdv.getJsonPayload();
+                                                                    if (inboundPayloadRdv is json) {
+                                                                           
+                                                                           rdv=inboundPayloadRdv;
+
+                                                                    } 
+                                                                    
+                                                                } 
 
 
 
@@ -92,7 +103,7 @@ service get_list_dossier on new http:Listener(7004) {
                                                                                         } 
                                                                                         //io:print("error when fetching person");
                                                                                     } 
-                                                                                    folder_list[i]={"dossier":dossier,"societe":societe,"personne":person};
+                                                                                    folder_list[i]={"dossier":dossier,"societe":societe,"personne":person,"rdv":rdv};
                                                                 }
                                                                                                                                                     
                                                                                         
