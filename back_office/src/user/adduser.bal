@@ -8,11 +8,13 @@ import ballerina/stringutils;
 
 var env_wso2=config:getAsString("host.wso2");
 var env_keycloak=config:getAsString("host.keycloak");
+var env_keycloak_edbm=config:getAsString("host.keycloakEdbmUri");
+var env_keycloak_token=config:getAsString("host.keycloakTokenUri");
 
 var idPersonne=0;
 
 http:Client personEP= new(env_wso2+"/services/personne");
-http:Client userKeycloakEP=new(env_keycloak+"/auth/admin/realms/EDBM");
+http:Client userKeycloakEP=new(env_keycloak+env_keycloak_edbm);
 
 @docker:Config {
    name: "add_user"
@@ -33,14 +35,61 @@ http:Client userKeycloakEP=new(env_keycloak+"/auth/admin/realms/EDBM");
     }
 }
 
-function cloneAndAggregate(map<json> payload, http:Client clientEP1) returns json[] {
+
+// get admin token
+function getAdminToken() returns json {
+    string tokenUri = env_keycloak+""+env_keycloak_token;
+    http:Client tokenClient = new(tokenUri);
+    string keycloakUser = config:getAsString("user.keycloak");
+    string keycloakPassword = config:getAsString("user.password");
+    string keycloakGrantType = config:getAsString("user.grantType");
+    string keycloakClientId = config:getAsString("user.clientId");
+    
+    json keycloakRequestData={
+        "username": keycloakUser,
+        "password": keycloakPassword, 
+        "grant_type": keycloakGrantType, 
+        "client_id": keycloakClientId
+    };
+
+    http:Request request = new;
+    request.setHeader("Content-Type","application/x-www-form-urlencoded");
+    request.setPayload(keycloakRequestData);
+
+    var response = tokenClient->post("/", request);
+
+    if(response is http:Response) {
+        var data = response.getJsonPayload();
+        if(data is json){
+            string token = processString(data.access_token);
+            string refreshToken = processString(data.refresh_token);
+
+            if(token == "no" || refreshToken == "no"){
+                io:println("Error: An error occured while accessing keycloak auth token :(");
+                return null;
+            }
+
+            return {
+                token,
+                refreshToken
+            };
+        }
+        io:println("Error: 'data' token is not json type :(");
+        return null;
+    }
+
+    io:println("Error: 'response' token is not http:Response type :(");
+    return null;
+}
+
+function cloneAndAggregate(map<json> payload, http:Client clientEP1, string? inputToken = ()) returns json[] {
     map<json> callerPayload = payload.clone();
     
      
     fork {
         worker w1 returns json {
             
-            return invokeAllEndpoint(clientEP1,payload);
+            return invokeAllEndpoint(clientEP1,payload, inputToken);
         } 
     }
     record{json w1; } results = wait {w1};
@@ -49,15 +98,15 @@ function cloneAndAggregate(map<json> payload, http:Client clientEP1) returns jso
     return aggregatedResponse;
 }
 // Invoke endpoint  add user in keycloak, Person add person and person adress
-function invokeAllEndpoint(http:Client clientEPPerson,  json outboundPayload) returns @untainted json {
+function invokeAllEndpoint(http:Client clientEPPerson,  json outboundPayload, string? inputToken = ()) returns @untainted json {
     json payload=outboundPayload;
-    var  token=processString(payload.credential.token);
+    var  token= inputToken == () ? processString(payload.credential.token) : inputToken;
   // User's information for keycloak
     var firstName=processString(payload.userInformation.firstName);
     var lastName=processString(payload.userInformation.lastName);
     var email=processString(payload.userInformation.email);
-    var enabled=processString(payload.userInformation.enabled);
-    var username=processString(payload.userInformation.username);
+    var enabled=processString(payload.userInformation?.enabled);
+    var username=processString(payload.userInformation?.username);
     var groupID=processString(payload.userInformation.groupID);
      string userID="";
     http:Request request = new;
