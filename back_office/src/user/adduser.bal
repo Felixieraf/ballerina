@@ -33,6 +33,18 @@ http:Client userKeycloakEP=new(env_keycloak+env_keycloak_edbm);
         var res3 = caller->respond(<@untainted> aggregatedResponse);
         //io:println(payload);
     }
+
+
+    @http:ResourceConfig {
+        body: "payload",
+        methods: ["POST"]
+    }
+    resource function signup(http:Caller caller, http:Request request, json payload){
+        json tokens = getAdminToken();
+        string? token = tokens == null ? () : tokens.token.toString();
+        json[] aggregatedResponse = cloneAndAggregate(<map<json>>payload, personEP, token);
+        var res = caller->respond(env_keycloak+env_keycloak_token);
+    }
 }
 
 
