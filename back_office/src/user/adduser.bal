@@ -31,7 +31,6 @@ http:Client userKeycloakEP=new(env_keycloak+env_keycloak_edbm);
     resource function aggregate_add_user(http:Caller caller, http:Request req, json payload) {
         json[] aggregatedResponse = cloneAndAggregate(<map<json>>payload, personEP );
         var res3 = caller->respond(<@untainted> aggregatedResponse);
-        //io:println(payload);
     }
 
 
@@ -43,55 +42,8 @@ http:Client userKeycloakEP=new(env_keycloak+env_keycloak_edbm);
         json tokens = getAdminToken();
         string? token = tokens == null ? () : tokens.token.toString();
         json[] aggregatedResponse = cloneAndAggregate(<map<json>>payload, personEP, token);
-        var res = caller->respond(env_keycloak+env_keycloak_token);
+        var res = caller->respond(<@untainted> aggregatedResponse);
     }
-}
-
-
-// get admin token
-function getAdminToken() returns json {
-    string tokenUri = env_keycloak+""+env_keycloak_token;
-    http:Client tokenClient = new(tokenUri);
-    string keycloakUser = config:getAsString("user.keycloak");
-    string keycloakPassword = config:getAsString("user.password");
-    string keycloakGrantType = config:getAsString("user.grantType");
-    string keycloakClientId = config:getAsString("user.clientId");
-    
-    json keycloakRequestData={
-        "username": keycloakUser,
-        "password": keycloakPassword, 
-        "grant_type": keycloakGrantType, 
-        "client_id": keycloakClientId
-    };
-
-    http:Request request = new;
-    request.setHeader("Content-Type","application/x-www-form-urlencoded");
-    request.setPayload(keycloakRequestData);
-
-    var response = tokenClient->post("/", request);
-
-    if(response is http:Response) {
-        var data = response.getJsonPayload();
-        if(data is json){
-            string token = processString(data.access_token);
-            string refreshToken = processString(data.refresh_token);
-
-            if(token == "no" || refreshToken == "no"){
-                io:println("Error: An error occured while accessing keycloak auth token :(");
-                return null;
-            }
-
-            return {
-                token,
-                refreshToken
-            };
-        }
-        io:println("Error: 'data' token is not json type :(");
-        return null;
-    }
-
-    io:println("Error: 'response' token is not http:Response type :(");
-    return null;
 }
 
 function cloneAndAggregate(map<json> payload, http:Client clientEP1, string? inputToken = ()) returns json[] {
@@ -121,10 +73,7 @@ function invokeAllEndpoint(http:Client clientEPPerson,  json outboundPayload, st
     var username=processString(payload.userInformation?.username);
     var groupID=processString(payload.userInformation.groupID);
      string userID="";
-    http:Request request = new;
-    request.addHeader("Content-Type", "application/json");
-    request.addHeader("Authorization", "Bearer "+token.toString());
-    
+    http:Request request = new;    
     json payloadUser={
         "firstName":firstName,
         "lastName":lastName, 
@@ -133,37 +82,39 @@ function invokeAllEndpoint(http:Client clientEPPerson,  json outboundPayload, st
         "username":username
 
     };
+
     request.setPayload(payloadUser);
-    io:print("ok",request);
+    request.addHeader("Content-Type", "application/json");
+    request.addHeader("Authorization", "Bearer "+token.toString());
 
     var inboundResponseUserKeycloak = userKeycloakEP->post("/users", request);
-                            if (inboundResponseUserKeycloak is http:Response) {
-                                io:print("ok",inboundResponseUserKeycloak);
-                               
-                                if(inboundResponseUserKeycloak.statusCode===201)
-                                {
-                                    io:print("inboundResponseUserKeycloak.statusCode",inboundResponseUserKeycloak.statusCode);
-                                       string header=inboundResponseUserKeycloak.getHeader("Location") ;
-                                        string regex=env_keycloak+"/auth/admin/realms/EDBM/users/";
-                                        userID=stringutils:replace(header,regex,"");
-                                    http:Client userKeycloakGroupEP=new(header);
-                                      var inboundResponseUserGroupKeycloak = userKeycloakGroupEP->put("/groups/"+groupID, request);
-                                            if (inboundResponseUserGroupKeycloak is http:Response) {
-                                               io:print("inboundResponseUserKeycloak.statusCode:",inboundResponseUserKeycloak.statusCode);
-                                                if(inboundResponseUserKeycloak.statusCode===201)
-                                                {
-                                                    return invokePersonEP(clientEPPerson,outboundPayload,email,firstName,lastName,userID);
-                                                    //return {message: "user added"};
-                                                }                
-                                                
-                                            }
-                                                }
+    if (inboundResponseUserKeycloak is http:Response) {
+        io:print("ok",inboundResponseUserKeycloak);
+        if(inboundResponseUserKeycloak.statusCode===201){
+            io:print("inboundResponseUserKeycloak.statusCode",inboundResponseUserKeycloak.statusCode);
+            string header=inboundResponseUserKeycloak.getHeader("Location") ;
+            string regex=env_keycloak+"/auth/admin/realms/EDBM/users/";
+            
+            userID=stringutils:replace(header,regex,"");
+            
+            http:Client userKeycloakGroupEP=new(header);
 
-                                 return {message: "ERROR"};
-                            } 
-  
-   
+            var inboundResponseUserGroupKeycloak = userKeycloakGroupEP->put("/groups/"+groupID, request);
+            if (inboundResponseUserGroupKeycloak is http:Response) {
+                io:print("inboundResponseUserKeycloak.statusCode:",inboundResponseUserKeycloak.statusCode);
+                if(inboundResponseUserKeycloak.statusCode===201)
+                {
+                    return invokePersonEP(clientEPPerson,outboundPayload,email,firstName,lastName,userID);
+                    //return {message: "user added"};
+                }                
+                        
+            }
+        }
+
+        return {message: "ERROR"};
+    } 
 }
+
 function invokePersonEP(http:Client clientEPPerson,  json outboundPayload,string email,string firstName,string lastName,string userID)returns @untainted json
 {   json payload=outboundPayload;
      // Adresse Personne setting outbound
@@ -240,6 +191,54 @@ function invokePersonEP(http:Client clientEPPerson,  json outboundPayload,string
 
 
 }
+
+// get admin token
+function getAdminToken() returns json {
+    string tokenUri = env_keycloak+""+env_keycloak_token;
+    http:Client tokenClient = new(tokenUri);
+    string keycloakUser = config:getAsString("user.keycloak");
+    string keycloakPassword = config:getAsString("user.password");
+    string keycloakGrantType = config:getAsString("user.grantType");
+    string keycloakClientId = config:getAsString("user.clientId");
+
+    string[] keycloakRequestData=[
+        "username=" + keycloakUser,
+        "password=" + keycloakPassword,
+        "grant_type=" + keycloakGrantType,
+        "client_id=" + keycloakClientId
+    ];
+
+    string formData = joinData(keycloakRequestData, "&");
+
+    http:Request request = new;
+    request.setPayload(formData);
+    request.setHeader("Content-Type","application/x-www-form-urlencoded");
+    var response = tokenClient->post("/", request);
+
+    if(response is http:Response) {
+        var data = response.getJsonPayload();
+        if(data is json){
+            string token = processString(data.access_token);
+            string refreshToken = processString(data.refresh_token);
+
+            if(token == "no" || refreshToken == "no"){
+                io:println("Error: An error occured while accessing keycloak auth token :(");
+                return null;
+            }
+
+            return {
+                token,
+                refreshToken
+            };
+        }
+        io:println("Error: 'data' token is not json type :(");
+        return null;
+    }
+
+    io:println("Error: 'response' token is not http:Response type :(");
+    return null;
+}
+
 function process(json|error je) returns @untainted int {
     if (je is json) {
         // The type test needs to be used first, to use the resultant value
@@ -269,10 +268,23 @@ function processString(json|error je) returns @untainted string {
     if (je is json) {
         // The type test needs to be used first, to use the resultant value
         // as a JSON value.
-        io:println("JSON value: ", je);
         return je.toString();
     } else {
         //io:println("Error on JSON access: ", je.detail()?.message);
         return "no";
     }
+}
+
+function joinData(any[] array, string separator) returns string {
+    string result = "";
+    int counter = 0;
+    foreach any data in array {
+        if (counter == (array.length() - 1)) {
+            result += data.toString();
+        } else {
+            result += data.toString() + separator;
+        }
+        counter += 1;
+    }
+    return result;
 }
