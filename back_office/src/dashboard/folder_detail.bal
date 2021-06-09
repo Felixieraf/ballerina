@@ -147,7 +147,7 @@ service getSubmitedFormById on new http:Listener(7001) {
                                     if(inboudResponseLocalisationName is http:Response)
                                     {
                                         var inboundPayloadLocalisation=inboudResponseLocalisationName.getJsonPayload();
-                                        io:print("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString());
+                                        io:print("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_d.toString());
                                         if(inboundPayloadLocalisation is json){
                                             personAdress={"region":inboundPayloadLocalisation,"adress":adresse_p};
                                         }
