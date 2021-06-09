@@ -143,7 +143,7 @@ service getSubmitedFormById on new http:Listener(7001) {
                                     int id_p=iprocess(inboundPayloadPersonAdress.adresses.adresse.idProvince);
                                     adresse_p=processString(inboundPayloadPersonAdress.adresses.adresse.adresse);
                                     
-                                    var inboudResponseLocalisationName=localisationEP1->get("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_r.toString(),request);
+                                    var inboudResponseLocalisationName=localisationEP1->get("/getAdressName?fokontany_id="+id_f.toString()+"&common_id="+id_c.toString()+"&province_id="+id_p.toString()+"&borough_id="+id_b.toString()+"&region_id="+id_r.toString()+"&district_id="+id_d.toString(),request);
                                     if(inboudResponseLocalisationName is http:Response)
                                     {
                                         var inboundPayloadLocalisation=inboudResponseLocalisationName.getJsonPayload();
